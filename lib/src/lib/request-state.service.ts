@@ -1,13 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, throwError, Subject, of } from 'rxjs';
 import { tap, catchError, retryWhen, switchMapTo, switchMap } from 'rxjs/operators';
-
-export interface RequestState<T> {
-  result: T | null;
-  isLoading: boolean;
-  error: any;
-  retry: () => void;
-}
+import { RequestState } from './request-state.interface';
 
 @Injectable()
 export class RequestStateService {
