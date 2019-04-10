@@ -35,6 +35,8 @@ Tracking the request status (loading, error, loaded) and implementing retry requ
 
 ## Usage
 
+There's a full example in the [Example App](https://github.com/brianmcd/ngx-request-state/tree/master/projects/example-app/src/app), but here's an overview of how it looks in practice.
+
 `ngx-request-state` comes with a `RequestStateService`.  The `RequestStateService`'s `createRequest` method takes an HTTP request `Observable` (like one returned from Angular's `HttpClient`) and returns an `Observable` that tracks the request state for you.
 
 The returned `Observable` emits `RequestState` interface objects whenever the state changes, where `RequestState` is:
@@ -55,9 +57,6 @@ interface RequestState<T> {
   retry: () => void;
 }
 ```
-
-There's a full example in the [Example App](https://github.com/brianmcd/ngx-request-state/tree/master/projects/example-app/src/app), but here's an overview of how it looks in practice.
-
 
 ```typescript
 @Injectable()
