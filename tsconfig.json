@@ -17,6 +17,26 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "ngx-request-state": [
+        "dist/ngx-request-state"
+      ],
+      "ngx-request-state/*": [
+        "dist/ngx-request-state/*"
+      ]
+    },
+    "esModuleInterop": true,
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "strictPropertyInitialization": false,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
   }
 }

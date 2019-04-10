@@ -1,0 +1,30 @@
+<ng-container *ngIf="(request$ | async) as request">
+  <div *ngIf="request.error as error">
+    <h1>Error: {{ error.message }}</h1>
+    <button (click)="request.retry()">Retry</button>
+  </div>
+
+  <div *ngIf="request.isLoading">
+    <h1>Loading...</h1>
+  </div>
+
+  <div *ngIf="request.result as widget">
+    <h1>{{ widget.name }}</h1>
+  </div>
+</ng-container>
+
+<div class="links">
+  <div>
+    <a routerLink="../1">Widget 1</a>
+  </div>
+
+  <div>
+    <a routerLink="../2">Widget 2</a>
+  </div>
+</div>
+
+<div>
+  <button (click)="toggleFailure()">
+    {{ widgetService.simulateFailure ? 'Disable' : 'Enable' }} Simulated Failures
+  </button>
+</div>

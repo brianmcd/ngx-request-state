@@ -1,0 +1,14 @@
+{
+  "name": "ngx-request-state",
+  "license": "MIT",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/brianmcd/ngx-request-state.git"
+  },
+  "peerDependencies": {
+    "@angular/common": ">= 6.0.0 <8.0.0",
+    "@angular/core": ">= 6.0.0 <8.0.0",
+    "rxjs": ">= 6.0.0 <7.0.0"
+  }
+}

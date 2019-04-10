@@ -1,0 +1,6 @@
+.links {
+  margin: 30px 0;
+  display: flex;
+  width: 300px;
+  justify-content: space-between;
+}
