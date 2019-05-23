@@ -1,20 +1,20 @@
-import { Subject } from 'rxjs';
+import { Observable, Subscriber } from 'rxjs';
 import { trackRequest } from './track-request';
 
 describe('trackRequest', () => {
   let next: jest.Mock;
-  let subject: Subject<string>;
+  let subscriber: Subscriber<any>;
 
   beforeEach(() => {
     next = jest.fn().mockName('next');
-    subject = new Subject();
+    new Observable((sub) => {
+      subscriber = sub;
+    })
+      .pipe(trackRequest())
+      .subscribe(next);
   });
 
   it('emits the loading state', () => {
-    const request = trackRequest(() => subject);
-
-    request.subscribe(next);
-
     expect(next).toHaveBeenCalledTimes(1);
     expect(next).toHaveBeenCalledWith({
       result: null,
@@ -26,11 +26,10 @@ describe('trackRequest', () => {
   });
 
   it('emits the success state when the request succeeds', () => {
-    const request = trackRequest(() => subject);
-    request.subscribe(next);
     next.mockClear();
 
-    subject.next('success');
+    subscriber.next('success');
+    subscriber.complete();
 
     expect(next).toHaveBeenCalledTimes(1);
     expect(next).toHaveBeenCalledWith({
@@ -46,11 +45,9 @@ describe('trackRequest', () => {
     let error: Error;
 
     beforeEach(() => {
-      const request = trackRequest(() => subject);
-      request.subscribe(next);
       next.mockClear();
       error = new Error('oh no');
-      subject.error(error);
+      subscriber.error(error);
     });
 
     it('emits the error state', () => {
@@ -65,10 +62,9 @@ describe('trackRequest', () => {
     });
 
     it('retries when retry is called', () => {
+      const firstSub = subscriber;
       const { retry } = next.mock.calls[0][0];
       next.mockClear();
-
-      subject = new Subject();
       retry();
 
       expect(next).toHaveBeenCalledTimes(1);
@@ -79,23 +75,21 @@ describe('trackRequest', () => {
         error: null,
         retry: expect.any(Function)
       });
+      // Make sure the observable is re-subscribed to.
+      expect(firstSub).not.toBe(subscriber);
     });
 
     it('emits success if the request succeeds after retries', () => {
       const { retry } = next.mock.calls[0][0];
       next.mockClear();
 
-      subject = new Subject();
       retry();
-      subject = new Subject();
       retry();
-      subject = new Subject();
       retry();
 
       next.mockClear();
-
-      subject.next('success');
-      subject.complete();
+      subscriber.next('success');
+      subscriber.complete();
 
       expect(next).toHaveBeenCalledTimes(1);
       expect(next).toHaveBeenCalledWith({

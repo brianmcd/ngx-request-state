@@ -1,51 +1,58 @@
-import { Observable, throwError, Subject, of } from 'rxjs';
-import { tap, catchError, retryWhen, switchMapTo, switchMap } from 'rxjs/operators';
+import { Observable, throwError, Subject } from 'rxjs';
+import { tap, catchError, retryWhen, switchMapTo } from 'rxjs/operators';
 import { RequestState } from './request-state.interface';
 
-export function trackRequest<T>(
-  callback: () => Observable<T>
-): Observable<RequestState<T>> {
-  const retry$ = new Subject<void>();
-  const retry = () => retry$.next();
+export function trackRequest<T = any>() {
+  return (source: Observable<T>): Observable<RequestState<T>> => {
+    return new Observable((subscriber) => {
+      const retry$ = new Subject<void>();
+      const retry = () => retry$.next();
 
-  return new Observable((subscriber) => {
-    const subscription = of('start')
-      .pipe(
-        tap(() => {
-          subscriber.next({
-            result: null,
-            isLoading: true,
-            hasError: false,
-            error: null,
-            retry
-          });
-        }),
-        switchMap(() => callback()),
-        catchError((err) => {
-          subscriber.next({
-            result: null,
-            isLoading: false,
-            hasError: true,
-            error: err,
-            retry
-          });
-          return throwError(err);
-        }),
-        retryWhen((errs) => errs.pipe(switchMapTo(retry$))),
-        tap((result) => {
-          subscriber.next({
-            result,
-            isLoading: false,
-            hasError: false,
-            error: null,
-            retry
-          });
-        })
-      )
-      .subscribe();
+      subscriber.next({
+        result: null,
+        isLoading: true,
+        hasError: false,
+        error: null,
+        retry
+      });
 
-    return function unsubscribe() {
-      subscription.unsubscribe();
-    };
-  });
+      return source
+        .pipe(
+          catchError((err) => {
+            subscriber.next({
+              result: null,
+              isLoading: false,
+              hasError: true,
+              error: err,
+              retry
+            });
+            return throwError(err);
+          }),
+          retryWhen((errs) => {
+            return errs.pipe(
+              switchMapTo(retry$),
+              tap(() => {
+                subscriber.next({
+                  result: null,
+                  isLoading: true,
+                  hasError: false,
+                  error: null,
+                  retry
+                });
+              })
+            );
+          }),
+          tap((result) => {
+            subscriber.next({
+              result,
+              isLoading: false,
+              hasError: false,
+              error: null,
+              retry
+            });
+          })
+        )
+        .subscribe();
+    });
+  };
 }

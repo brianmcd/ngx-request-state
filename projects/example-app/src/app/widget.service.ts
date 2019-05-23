@@ -23,15 +23,14 @@ export class WidgetService {
   public simulateFailure = false;
 
   public fetch(id: number): Observable<RequestState<Widget>> {
-    return trackRequest(() => {
-      return timer(300).pipe(
-        switchMap(() => {
-          if (this.simulateFailure) {
-            return throwError(new Error('Simulated Failure'));
-          }
-          return of(widgets[id]);
-        })
-      );
-    });
+    return timer(300).pipe(
+      switchMap(() => {
+        if (this.simulateFailure) {
+          return throwError(new Error('Simulated Failure'));
+        }
+        return of(widgets[id]);
+      }),
+      trackRequest()
+    );
   }
 }
