@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { RequestStateService, RequestState } from 'ngx-request-state';
+import { trackRequest, RequestState } from 'ngx-request-state';
 import { Observable, of, throwError, timer } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 
@@ -22,10 +22,8 @@ const widgets: WidgetMap = {
 export class WidgetService {
   public simulateFailure = false;
 
-  constructor(private readonly requestStateService: RequestStateService) {}
-
   public fetch(id: number): Observable<RequestState<Widget>> {
-    return this.requestStateService.createRequest(() => {
+    return trackRequest(() => {
       return timer(300).pipe(
         switchMap(() => {
           if (this.simulateFailure) {
