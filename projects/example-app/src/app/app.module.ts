@@ -3,7 +3,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AppComponent } from './app.component';
 import { WidgetComponent } from './widget/widget.component';
-import { NgxRequestStateModule } from 'ngx-request-state';
 
 const routes: Routes = [
   {
@@ -19,7 +18,7 @@ const routes: Routes = [
 
 @NgModule({
   declarations: [AppComponent, WidgetComponent],
-  imports: [BrowserModule, RouterModule.forRoot(routes), NgxRequestStateModule.forRoot()],
+  imports: [BrowserModule, RouterModule.forRoot(routes)],
   providers: [],
   bootstrap: [AppComponent]
 })

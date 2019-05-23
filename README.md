@@ -1,41 +1,10 @@
 # ngx-request-state
 
-An easy, reactive way to track the status (loading, error, success) of your API requests, along with easy retry for failures.
+An RxJS operator that provides an easy way to track the status (loading, error, success) of your API requests, along with easy retry for failures.
 
 ## Installation
 
 `yarn add ngx-request-state` or `npm install ngx-request-state`
-
-## Setup
-
-There are 2 ways to use this library: import the `trackRequest` function or use the `RequestStateService`.
-
-#### Option 1:
-
-```typescript
-import { trackRequest } from 'ngx-request-state';
-```
-
-#### Option 2:
-
-If you want to inject a service so you can mock it out during tests, you can use the `RequestStateService`.
-
-Import the `NgxRequestStateModule` inside your `AppModule`:
-
-```typescript
-import { NgxRequestStateModule } from 'ngx-request-state';
-
-@NgModule({
-  declarations: [...],
-  imports: [NgxRequestStateModule.forRoot()],
-  providers: [...],
-  bootstrap: [AppComponent]
-})
-export class AppModule {}
-
-```
-
-Then inject `RequestStateService` wherever you'd like.
 
 ## Motivation
 
@@ -49,11 +18,9 @@ Tracking the request status (loading, error, loaded) and implementing retry requ
 
 ## Usage
 
-There's a full example in the [Example App](https://github.com/brianmcd/ngx-request-state/tree/master/projects/example-app/src/app), but here's an overview of how it looks in practice.
+There's a full example in the [Example App](https://github.com/brianmcd/ngx-request-state/tree/master/projects/example-app/src/app), but here's an overview of how it works in practice.
 
-`ngx-request-state` exposes a `trackRequest` function, either by itself or in a service. `trackRequest` takes an HTTP request `Observable` (like one returned from Angular's `HttpClient`) and returns an `Observable` that tracks the request state for you.
-
-The returned `Observable` emits `RequestState` interface objects whenever the state changes, where `RequestState` is:
+`ngx-request-state` exports a `trackRequest` operator that turns your stream into a stream of `RequestState`s:
 
 ```typescript
 interface RequestState<T> {
@@ -75,34 +42,6 @@ interface RequestState<T> {
 }
 ```
 
-## An Important Note About Observable Completion
-
-Since this library emits multiple values and allows retry, the completion semantics are different than Angular's `HttpClient` observables.  Requests wrapped in `trackRequest` will *not* automatically complete after a sucess or failure.
-This means that you should:
-* Unsubscribe from the requests when your component is destroyed, which is a good idea even with Angular's observables due to the possibility of slow requests completing after your component is destroyed.  If you're using the `async` pipe, you don't have to worry about this.
-* Make sure you `filter` and `take(1)` in any route guards that use wrapped requests.
-
-Example guard:
-
-```typescript
-@Injectable()
-export class FetchWidgetGuard implements CanActivate {
-  constructor(private readonly widgetService: WidgetService) {}
-
-  public canActivate(): Observable<boolean> {
-    return this.widgetService.fetch().pipe(
-      // Wait until the request succeeds or fails.
-      filter((request) => !request.isLoading),
-      // If the request fails, emit `false`, otherwise, `true`.
-      map((request) => !request.hasError),
-      // The wrapped Observable won't automatically complete, so we have to do it.
-      take(1)
-    );
-  }
-}
-```
-
-
 #### Example
 
 ```typescript
@@ -111,7 +50,7 @@ import { trackRequest } from 'ngx-request-state';
 @Injectable()
 export class WidgetService {
   public fetch(id: number): Observable<RequestState<Widget>> {
-    return trackRequest(() => this.httpClient.get(`/widgets/${id}`));
+    return this.httpClient.get(`/widgets/${id}`)).pipe(trackRequest());
   }
 }
 ```
@@ -150,3 +89,10 @@ export class WidgetComponent {
 ```
 
 Note that we can retry the request by calling `retry()` on the `RequestState`.
+
+## An Important Note About Observable Completion
+
+Since this library emits multiple values and allows retry, the completion semantics are different than Angular's `HttpClient` observables.  Requests wrapped in `trackRequest` will *not* automatically complete after a sucess or failure.
+This means that you should:
+* Use the async pipe or unsubscribe from the requests when your component is destroyed, which is a good idea even with Angular's observables due to the possibility of slow requests completing after your component is destroyed.
+* Make sure you `filter` and `take(1)` in any route guards that use wrapped requests.
